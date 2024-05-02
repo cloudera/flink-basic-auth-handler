@@ -82,7 +82,7 @@ public class ServerBasicAuthHandlerFactory implements InboundChannelHandlerFacto
             throw new ConfigurationException(e);
         }
 
-        LOG.info("Creating basic server authentication handler");
+        LOG.debug("Creating basic server authentication handler");
         return Optional.of(new ServerBasicHttpAuthenticator(credentials, responseHeaders));
     }
 }

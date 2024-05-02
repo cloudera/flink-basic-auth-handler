@@ -22,36 +22,29 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.HistoryServerOptions;
 
 import com.cloudera.flink.config.BasicAuthOptions;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Base64;
 
+import static java.util.Objects.requireNonNull;
+
 /** Test for the HistoryServer Basic authentication integration. */
-public class HistoryServerBasicAuthTest {
+class HistoryServerBasicAuthTest {
 
     private static final String PASSWORD_FILE =
-            HistoryServerBasicAuthTest.class.getResource("/.htpasswd").getFile();
+            requireNonNull(HistoryServerBasicAuthTest.class.getResource("/.htpasswd")).getFile();
 
     private static final String USER_CREDENTIALS = "testusr:testpwd";
 
-    @Rule public final TemporaryFolder haBaseFolder = new TemporaryFolder();
-
-    private File jmDirectory;
-
-    @Before
-    public void setUp() throws Exception {
-        jmDirectory = haBaseFolder.newFolder("jm");
-    }
+    @TempDir private Path tempDir;
 
     @Test
-    public void testAuthGoodCredentials() throws Exception {
+    void testAuthGoodCredentials() throws Exception {
         Configuration serverConfig = getServerConfig();
         HistoryServer hs = new HistoryServer(serverConfig);
 
@@ -60,21 +53,21 @@ public class HistoryServerBasicAuthTest {
             String baseUrl = "http://localhost:" + hs.getWebPort();
             String authHeader =
                     "Basic " + new String(Base64.getEncoder().encode(USER_CREDENTIALS.getBytes()));
-            Assert.assertEquals(200, getHTTPResponseCode(baseUrl, authHeader));
+            Assertions.assertEquals(200, getHTTPResponseCode(baseUrl, authHeader));
         } finally {
             hs.stop();
         }
     }
 
     @Test
-    public void testAuthBadCredentials() throws Exception {
+    void testAuthBadCredentials() throws Exception {
         Configuration serverConfig = getServerConfig();
         HistoryServer hs = new HistoryServer(serverConfig);
 
         try {
             hs.start();
             String baseUrl = "http://localhost:" + hs.getWebPort();
-            Assert.assertEquals(401, getHTTPResponseCode(baseUrl, null));
+            Assertions.assertEquals(401, getHTTPResponseCode(baseUrl, null));
         } finally {
             hs.stop();
         }
@@ -83,7 +76,8 @@ public class HistoryServerBasicAuthTest {
     private Configuration getServerConfig() {
         Configuration config = new Configuration();
         config.setString(
-                HistoryServerOptions.HISTORY_SERVER_ARCHIVE_DIRS, jmDirectory.toURI().toString());
+                HistoryServerOptions.HISTORY_SERVER_ARCHIVE_DIRS,
+                tempDir.resolve("jm").toFile().toURI().toString());
         config.set(BasicAuthOptions.BASIC_AUTH_PWD_FILE, PASSWORD_FILE);
         config.set(BasicAuthOptions.BASIC_AUTH_ENABLED, true);
         config.set(BasicAuthOptions.BASIC_AUTH_CLIENT_CREDENTIALS, USER_CREDENTIALS);

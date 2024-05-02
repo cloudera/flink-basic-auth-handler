@@ -22,7 +22,7 @@ under the License.
 
 	<groupId>com.cloudera.flink</groupId>
 	<artifactId>flink-basic-auth-handler</artifactId>
-	<version>1.0</version>
+	<version>1.1</version>
 
 	<licenses>
 		<license>
@@ -50,15 +50,15 @@ under the License.
 	</repositories>
 
 	<properties>
-		<spotless.version>2.4.2</spotless.version>
-		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+		<java.version>1.8</java.version>
 
-		<target.java.version>1.8</target.java.version>
-		<scala.binary.version>2.12</scala.binary.version>
-		<flink.version>1.14.0</flink.version>
+		<flink.version>1.16.3</flink.version>
 		<commons.codec.version>1.13</commons.codec.version>
-		<log4j.version>2.14.1</log4j.version>
-		<junit.version>4.13.2</junit.version>
+		<log4j.version>2.23.1</log4j.version>
+
+		<maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+		<maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
+		<spotless.version>2.27.1</spotless.version>
 	</properties>
 
 	<dependencies>
@@ -97,16 +97,16 @@ under the License.
 
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-runtime-web_${scala.binary.version}</artifactId>
+			<artifactId>flink-runtime-web</artifactId>
 			<version>${flink.version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-test-utils</artifactId>
 			<scope>test</scope>
-			<version>${junit.version}</version>
+			<version>${flink.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -150,9 +150,15 @@ under the License.
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${maven.compiler.plugin.version}</version>
 				<configuration>
-					<source>${target.java.version}</source>
-					<target>${target.java.version}</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven.surefire.plugin.version}</version>
 			</plugin>
 		</plugins>
 	</build>

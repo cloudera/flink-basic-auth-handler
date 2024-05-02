@@ -5,10 +5,17 @@ authentication possibility to Flink.
 Please see [FLIP-181](https://cwiki.apache.org/confluence/x/CAUBCw) for further details.
 
 ## How to build
-In order to build the project one needs maven and java.
-Since the authentication handler is Flink version dependent please make sure the version are matching in `pom.xml`.
+In order to build the project one needs Maven and Java.
+
+The authentication handler requires Flink version 1.16 or higher. To test with a specific Flink version, set the
+property `flink.version`. For example, to test with Flink 1.17.2, run:
 ```
-mvn clean install
+./mvnw -Dflink.version=1.17.2 clean verify
+```
+
+To build the authentication handler, run:
+```
+./mvnw clean package
 ```
 
 ## How to install
@@ -27,11 +34,11 @@ inbound/outbound handlers with service loader automatically.
 
 The following configuration properties are supported:
 
-Property | Type | Default | Description
----------|------|---------|------------
-security.basic.auth.enabled | boolean | false | Turns on/off basic authentication
-security.basic.auth.password.file | string | (none) | Basic authentication password file
-security.basic.auth.client.credentials | string | (none) | Basic authentication client credentials user:pwd
+| Property                               | Type    | Default | Description                                      |
+|----------------------------------------|---------|---------|--------------------------------------------------|
+| security.basic.auth.enabled            | boolean | false   | Turns on/off basic authentication                |
+| security.basic.auth.password.file      | string  | (none)  | Basic authentication password file               |
+| security.basic.auth.client.credentials | string  | (none)  | Basic authentication client credentials user:pwd |
 
 ## License
 This is licensed under Apache License Version 2.0.
