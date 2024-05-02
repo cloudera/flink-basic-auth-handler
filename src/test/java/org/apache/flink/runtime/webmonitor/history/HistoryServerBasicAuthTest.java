@@ -33,11 +33,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Base64;
 
+import static java.util.Objects.requireNonNull;
+
 /** Test for the HistoryServer Basic authentication integration. */
 public class HistoryServerBasicAuthTest {
 
     private static final String PASSWORD_FILE =
-            HistoryServerBasicAuthTest.class.getResource("/.htpasswd").getFile();
+            requireNonNull(HistoryServerBasicAuthTest.class.getResource("/.htpasswd")).getFile();
 
     private static final String USER_CREDENTIALS = "testusr:testpwd";
 

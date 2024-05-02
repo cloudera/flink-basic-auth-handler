@@ -62,7 +62,7 @@ public class ClientBasicAuthHandlerFactory implements OutboundChannelHandlerFact
                                                 BasicAuthOptions.BASIC_AUTH_CLIENT_CREDENTIALS.key()
                                                         + " must be configured if basic auth is enabled."));
 
-        LOG.info("Creating basic client authentication handler");
+        LOG.debug("Creating basic client authentication handler");
         return Optional.of(new ClientBasicHttpAuthenticator(credentials));
     }
 }

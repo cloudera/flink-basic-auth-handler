@@ -22,30 +22,38 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.runtime.rest.util.TestRestServerEndpoint;
 import org.apache.flink.runtime.rpc.RpcUtils;
-import org.apache.flink.runtime.testutils.TestingUtils;
 import org.apache.flink.runtime.webmonitor.RestfulGateway;
 import org.apache.flink.runtime.webmonitor.TestingRestfulGateway;
+import org.apache.flink.testutils.TestingUtils;
+import org.apache.flink.testutils.executor.TestExecutorExtension;
 
 import com.cloudera.flink.config.BasicAuthOptions;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static java.util.Objects.requireNonNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /** This test validates basic auth for rest endpoints. */
 public class RestBasicAuthTest {
 
+    @RegisterExtension
+    static final TestExecutorExtension<ScheduledExecutorService> EXECUTOR_RESOURCE =
+            TestingUtils.defaultExecutorExtension();
+
     private static final String PASSWORD_FILE =
-            RestBasicAuthTest.class.getResource("/.htpasswd").getFile();
+            requireNonNull(RestBasicAuthTest.class.getResource("/.htpasswd")).getFile();
 
     private static RestServerEndpoint serverEndpoint;
     private static RestServerEndpointITCase.TestVersionHandler testVersionHandler;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         Configuration serverConfig = getConfig();
 
@@ -66,28 +74,31 @@ public class RestBasicAuthTest {
     public void testAuthGoodCredentials() throws Exception {
         Configuration goodCredsConf = getConfig();
         goodCredsConf.set(BasicAuthOptions.BASIC_AUTH_CLIENT_CREDENTIALS, "testusr:testpwd");
-        RestClient restClientWithGoodCredentials =
-                new RestClient(goodCredsConf, TestingUtils.defaultExecutor());
-        restClientWithGoodCredentials
-                .sendRequest(
-                        serverEndpoint.getServerAddress().getHostString(),
-                        serverEndpoint.getServerAddress().getPort(),
-                        testVersionHandler.getMessageHeaders())
-                .get();
+        try (RestClient restClientWithGoodCredentials =
+                new RestClient(goodCredsConf, EXECUTOR_RESOURCE.getExecutor())) {
+            InetSocketAddress serverAddress = serverEndpoint.getServerAddress();
+            assertNotNull(serverAddress);
+            restClientWithGoodCredentials
+                    .sendRequest(
+                            serverAddress.getHostString(),
+                            serverAddress.getPort(),
+                            testVersionHandler.getMessageHeaders())
+                    .get();
+        }
     }
 
     @Test
     public void testAuthBadCredentials() throws Exception {
         Configuration badCredsConf = getConfig();
         badCredsConf.set(BasicAuthOptions.BASIC_AUTH_CLIENT_CREDENTIALS, "wrong:pwd");
-        RestClient restClientWithBadCredentials =
-                new RestClient(badCredsConf, TestingUtils.defaultExecutor());
-
-        try {
+        try (RestClient restClientWithBadCredentials =
+                new RestClient(badCredsConf, EXECUTOR_RESOURCE.getExecutor())) {
+            InetSocketAddress serverAddress = serverEndpoint.getServerAddress();
+            assertNotNull(serverAddress);
             restClientWithBadCredentials
                     .sendRequest(
-                            serverEndpoint.getServerAddress().getHostString(),
-                            serverEndpoint.getServerAddress().getPort(),
+                            serverAddress.getHostString(),
+                            serverAddress.getPort(),
                             testVersionHandler.getMessageHeaders())
                     .get();
             fail();
